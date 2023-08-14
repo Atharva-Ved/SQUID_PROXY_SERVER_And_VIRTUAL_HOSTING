@@ -1,0 +1,38 @@
+paste this under  squid.conf last line  in the file 
+
+
+#-----------------------------------------------------------------------
+http_port 80 vhost
+
+# Define the access control lists (ACLs) for the virtual hosts
+acl onlinexaminationsystem_com dstdomain onlinexaminationsystem.com
+acl Eexaminationsystem_com dstdomain Eexaminationsystem.com
+
+# Define the cacahe directories for each virtual host
+cache_dir ufs /var/spool/squid/onlinexaminationsystem_com 10000 16 256
+cache_dir ufs /var/spool/squid/Eexaminationsystem_com 10000 16 256
+
+# Allow only requests fom the specified virtual hosts
+http_access allow onlinexaminationsystem_com
+http_access allow Eexaminationsystem_com
+
+# Deny all other requests
+http_access deny all
+
+# Forward requests to the appropriate virtual host based on the domain name
+http_port 3128 accel defaultsite=onlinexaminationsystem.com vhost
+http_port 3129 accel defaultsite=Eexaminationsystem.com vhost
+
+# Reverse Proxy Settings for Virtual Hosts
+cache_peer 127.0.0.1 parent 8080 0 no-query originserver  name=server1
+cache_peer_access server1 allow onlinexaminationsystem_com
+
+
+cache_peer 127.0.0.1 parent 8080 0 no-query originserver  name=server2
+cache_peer_access server2 allow Eexaminationsystem_com
+
+#-------------------------------------------------------------------------
+
+acl forbidden_domains dstdomain "/etc/squid/forbidden_domains.txt"
+http_access deny  forbidden_domains
+
